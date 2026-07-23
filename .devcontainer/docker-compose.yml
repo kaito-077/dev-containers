@@ -1,0 +1,58 @@
+services:
+  # ---------- Database ----------
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: seminar
+      POSTGRES_PASSWORD: seminar
+      POSTGRES_DB: seminar_db
+    volumes:
+      # データを永続化（コンテナを消しても中身は残る）
+      - db_data:/var/lib/postgresql/data
+      # 初回起動時に自動実行される初期化SQL（テーブル作成）
+      - ../db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  # ---------- Backend (Spring Boot) ----------
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ../backend:/workspace:cached
+      # Mavenの依存ライブラリをキャッシュして永続化（毎回ダウンロードしない）
+      - maven_repo:/root/.m2
+    command: sleep infinity
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/seminar_db
+      SPRING_DATASOURCE_USERNAME: seminar
+      SPRING_DATASOURCE_PASSWORD: seminar
+
+  # ---------- Frontend (Next.js) ----------
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ../frontend:/workspace:cached
+      # node_modulesは匿名ボリュームにして、Mac/Windowsホストとの
+      # OS差異・速度問題を避けつつ、キャッシュとして永続化する
+      - frontend_node_modules:/workspace/node_modules
+    command: sleep infinity
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
+  maven_repo:
+  frontend_node_modules:

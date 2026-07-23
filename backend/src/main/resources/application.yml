@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/seminar_db}
+    username: ${SPRING_DATASOURCE_USERNAME:seminar}
+    password: ${SPRING_DATASOURCE_PASSWORD:seminar}
+  jpa:
+    hibernate:
+      ddl-auto: none   # テーブルはdb/init配下のSQLで作成するため、自動生成はしない
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
