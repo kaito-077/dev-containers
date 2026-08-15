@@ -16,3 +16,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# issue-pipeline用worktree（.claude/settings.jsonは追跡対象なのでここでは除外しない）
+.claude/worktrees/
